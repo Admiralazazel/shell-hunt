@@ -10,13 +10,6 @@ TIME_STAMP="Updated on $RIGHT_NOW by $USER"
 
 ##### Functions
 
-press_enter()
-{
-    echo -en "\n Press Enter to Continue ...  "
-    read
-    clear
-}
-
 system_info()
 {
     echo "<h2>System release info</h2>"
@@ -60,21 +53,77 @@ home_space()
 }   # end of home_space
 
 
+write_page()
+{
+    cat <<- _EOF_
+    <html>
+        <head>
+        <title>$TITLE</title>
+        </head>
+        <body>
+        <h1>$TITLE</h1>
+        <p>$TIME_STAMP</p>
+        $(system_info)
+        $(show_uptime)
+        $(drive_space)
+        $(home_space)
+        </body>
+    </html>
+_EOF_
+
+}
+
+usage()
+{
+    echo "usage: sysinfo_page [[[-f file ] [-i]] | [-h]]"
+}
+
 
 ##### Main
 
-cat <<- _EOF_
-  <html>
-  <head>
-      <title>$TITLE</title>
-  </head>
-  <body>
-      <h1>$TITLE</h1>
-      <p>$TIME_STAMP</p>
-      $(system_info)
-      $(show_uptime)
-      $(drive_space)
-      $(home_space)
-  </body>
-  </html>
-_EOF_
+interactive=
+filename=~/sysinfo_page.html
+
+while [ "$1" != "" ]; do
+    case $1 in
+        -f | --file )           shift
+                                filename=$1
+                                ;;
+        -i | --interactive )    interactive=1
+                                ;;
+        -h | --help )           usage
+                                exit
+                                ;;
+        * )                     usage
+                                exit 1
+    esac
+    shift
+done
+
+
+# Test code to verify command line processing
+
+if [ "$interactive" = "1" ]; then
+
+    response=
+
+    echo -n "Enter name of output file [$filename] > "
+    read response
+    if [ -n "$response" ]; then
+        filename=$response
+    fi
+
+    if [ -f $filename ]; then
+        echo -n "Output file exists. Overwrite? (y/n) > "
+        read response
+        if [ "$response" != "y" ]; then
+            echo "Exiting program."
+            exit 1
+        fi
+    fi
+fi
+
+
+# Write page (comment out until testing is complete)
+
+# write_page > $filename
